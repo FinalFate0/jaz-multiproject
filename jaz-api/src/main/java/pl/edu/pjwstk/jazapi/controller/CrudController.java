@@ -13,7 +13,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class CrudController<T extends DbEntity> {
-    @Autowired
     private final CrudService<T> service;
 
     public CrudController(CrudService<T> service) {
@@ -21,15 +20,24 @@ public abstract class CrudController<T extends DbEntity> {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Map<String, Object>>> getAll() {
+    public ResponseEntity<List<Map<String, Object>>> getAll(@RequestParam(defaultValue = "4", name = "size") int size,
+                                                            @RequestParam(defaultValue = "0", name = "page") int page,
+                                                            @RequestParam(defaultValue = "desc", name = "direction") String direction,
+                                                            @RequestParam(defaultValue = "id", name = "properties") String properties) {
         try {
-            List<T> all = service.getAll();
+            String[] propertiesList = properties.split(",");
+            for(String string : propertiesList) {
+                System.out.println(string);
+            }
+            List<T> all = service.getAll(page, size, direction, propertiesList);
             List<Map<String, Object>> payload = all.stream()
                     .map(obj -> transformToDTO().apply(obj))
                     .collect(Collectors.toList());
 
             return new ResponseEntity<>(payload, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
+
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
