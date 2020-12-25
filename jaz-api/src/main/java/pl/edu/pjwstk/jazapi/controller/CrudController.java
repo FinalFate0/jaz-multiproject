@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.*;
 import pl.edu.pjwstk.jazapi.service.CrudService;
 import pl.edu.pjwstk.jazapi.service.DbEntity;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class CrudController<T extends DbEntity> {
+    @Autowired
     private final CrudService<T> service;
 
     public CrudController(CrudService<T> service) {
@@ -20,24 +22,23 @@ public abstract class CrudController<T extends DbEntity> {
     }
 
     @GetMapping()
-    public ResponseEntity<List<Map<String, Object>>> getAll(@RequestParam(defaultValue = "4", name = "size") int size,
-                                                            @RequestParam(defaultValue = "0", name = "page") int page,
-                                                            @RequestParam(defaultValue = "desc", name = "direction") String direction,
-                                                            @RequestParam(defaultValue = "id", name = "properties") String properties) {
+    public ResponseEntity<List<Map<String, Object>>> getAll(@RequestParam(defaultValue = "4") int size,
+                                                            @RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "asc,id") String sort) {
         try {
-            String[] propertiesList = properties.split(",");
-            for(String string : propertiesList) {
-                System.out.println(string);
-            }
-            List<T> all = service.getAll(page, size, direction, propertiesList);
+            List<T> all = service.getAll(size, page, sort);
             List<Map<String, Object>> payload = all.stream()
                     .map(obj -> transformToDTO().apply(obj))
                     .collect(Collectors.toList());
 
+            Map<String, Object> pagingInfo = new LinkedHashMap<>();
+            pagingInfo.put("pageSize", size);
+            pagingInfo.put("page", page);
+            pagingInfo.put("sort", sort);
+            payload.add(pagingInfo);
+
             return new ResponseEntity<>(payload, HttpStatus.OK);
         } catch (Exception e) {
-            e.printStackTrace();
-
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
