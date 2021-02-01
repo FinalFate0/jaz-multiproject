@@ -7,6 +7,7 @@ import pl.edu.pjwstk.jazapi.repository.AddOnRepository;
 import pl.edu.pjwstk.jazapi.repository.CarRepository;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -14,10 +15,12 @@ import static pl.edu.pjwstk.jazapi.util.Utils.fallbackIfNull;
 
 @Service
 public class CarService extends CrudService<Car> {
+    private final CarRepository carRepository;
     private final AddOnRepository addOnRepository;
 
     public CarService(CarRepository carRepository, AddOnRepository addOnRepository) {
         super(carRepository);
+        this.carRepository = carRepository;
         this.addOnRepository = addOnRepository;
     }
 
@@ -59,5 +62,11 @@ public class CarService extends CrudService<Car> {
 
             return updateEntity;
         }
+
+
+    }
+
+    public List<Car> getByManufacturer(String manufacturer){
+        return carRepository.getByManufacturer(manufacturer);
     }
 }
