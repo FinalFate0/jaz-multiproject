@@ -24,9 +24,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class CarController extends CrudController<Car, CarDTO> {
     private final CarService service;
 
-    public CarController(CarService service, CarService service1) {
+    public CarController(CarService service) {
         super(service);
-        this.service = service1;
+        this.service = service;
     }
 
     @GetMapping("/manufacturer/{manufacturer}")
